@@ -1,0 +1,14 @@
+description: Endpoint for creating new group by a user that is logged in
+  parameters:
+  - name: name
+    type: string
+    required: true
+    location: form
+  - name: bloodgroup
+    type: string
+    required: true
+    location: body
+  - name: birthmark
+    type: string
+    required: true
+    location: form
