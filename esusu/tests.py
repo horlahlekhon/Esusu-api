@@ -290,6 +290,7 @@ class MembershipTests(BaseViewTest):
         grp = Group.objects.get(name='ES-lag4')
         usr = User.objects.get(username="test_user3")
         mbrship = Membership.objects.create(user=usr, group=grp, status="A")
+        print("memmemeeeeeeeeeeeeeuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", [i.status for i in grp.members.all()])
         self.login_client("test_user3", "testing3")
         response = self.client.post(
             reverse("make_contribution"),

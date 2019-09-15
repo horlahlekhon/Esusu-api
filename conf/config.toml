@@ -1,0 +1,12 @@
+MAILJET_API_KEY = 'effd16db611dab2e8a9d7515e6caf7d9' 
+MAILJET_API_SECRET = '462488cdc685193b657ed4dafbf5633e'
+DOMAIN = "https://localhost:5000"
+REGISTERED_MAIL = "horlahlekhon@gmail.com"
+SITE_ADMIN = "Olalekan"
+POSTGRES_USER="postgres"
+POSTGRES_PASSWORD="postgres"
+POSTGRES_DB="esusu_api"
+POSTGRES_PORT=5434
+# HOST="db"
+APP_SECRET_KEY="secret_key"
+DEBUG = true

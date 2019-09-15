@@ -15,14 +15,23 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
-from rest_framework.schemas import get_schema_view
-from rest_framework_swagger.views import get_swagger_view
-from .custom_schema import SwaggerSchemaView
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
 
-schema_view = get_swagger_view(title='Esusu Api')
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Esusu API",
+      default_version='v1',
+      description="An Esusu Group savings implementation",
+      contact=openapi.Contact(email="horlahlekhon@gmail.com"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
-    re_path(r'^docs/', SwaggerSchemaView.as_view(), name='docs'),
+    re_path(r'^docs/', schema_view.with_ui('swagger', cache_timeout=0), name='docs'),
     path('admin/', admin.site.urls),
     path('api/', include('esusu.urls')),
 ]

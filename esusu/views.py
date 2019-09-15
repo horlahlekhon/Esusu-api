@@ -23,6 +23,11 @@ from .models import Contribution, Group, Membership, Tenure
 from .serializers import (ContributionSerializer, GroupSerializer,
                           MembershipSerializer, TokenSerializer,
                           UserSerializer)
+from drf_yasg.utils import no_body, swagger_auto_schema
+from drf_yasg import openapi
+from drf_yasg.app_settings import swagger_settings
+
+
 
 User = get_user_model()
 
@@ -207,6 +212,14 @@ class ContributionCreateView(generics.GenericAPIView):
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
+        tenure = Tenure.objects.get(id=group.tenure.id)
+        if not tenure or tenure.status in ("I", "Inactive"):
+            return Response(
+                data = {
+                    "message" : "You cannot make contributions when the Esusu have not kicked off"
+                },
+                status = status.HTTP_403_FORBIDDEN
+            )
         try:
             membership = group.members.get(user__id=user.id)
         except  Membership.DoesNotExist:
@@ -216,7 +229,8 @@ class ContributionCreateView(generics.GenericAPIView):
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
-        if membership.status == "I" or "Inactive":
+        print("status :{}, user : {}".format(membership.status, membership.user.username))
+        if membership.status in ("I", "Inactive"):
             return Response(
                 data={
                     "message": "Your membership on this group is inactive, and you cannot make contributions. please contact the group admin"
@@ -241,37 +255,21 @@ class GroupListView(ListModelMixin, generics.GenericAPIView):
     queryset = Group.objects.all()
     permision_classes = (permissions.IsAuthenticated, )
 
+    @swagger_auto_schema(operation_description="This endpoint returns all "
+        + "Esusu groups on the platform that is searchable", responses={200: GroupSerializer(many=True)})
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
-
 class GroupCreateAPIView(CreateModelMixin,
                          generics.GenericAPIView):
-    """
-        description: Endpoint for creating new group by a user that is logged in
-        parameters:
-        - name: name
-          type: string
-          required: true
-          location: body
-        - name: bloodgroup
-          type: string
-          required: true
-          location: body
-        - name: birthmark
-          type: string
-          required: true
-          location: form
-    """
+                         
     queryset = Group.objects.filter(is_searchable = True)
     serializer_class = GroupSerializer
     permision_classes = (permissions.IsAuthenticated, )
 
+    @swagger_auto_schema(operation_description="Create a group on the platform."
+    +" This will automatically make the currently logged in user the group admin and a member")
     def post(self, request, *args, **kwargs):
-        """
-        handles the post request to create a new group
-
-        """
         serializer = GroupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(admin=request.user.id)
@@ -279,11 +277,9 @@ class GroupCreateAPIView(CreateModelMixin,
 
 
 class GroupDetailView(generics.RetrieveUpdateDestroyAPIView):
+
     """
-    GroupDetailView provides the following endpoints
-    GET api/groups/:pk\n
-    PUT api/groups/:pk\n
-    DELETE api/groups/:pk\n
+     Do basic operations on a singe instance of a group, calling the endpoints must be  a group admin of the group
     """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
@@ -293,8 +289,7 @@ class GroupDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class GroupMembershipView(generics.GenericAPIView):
     """
-    AddMemberToGroupView insert members into a group
-    PUT api/groups/:group_id/members/add
+     insert members into a group
     """
     queryset = Group.objects.all()
     permission_classes = (permissions.IsAuthenticated, IsGroupCreator, )
@@ -304,10 +299,11 @@ class GroupMembershipView(generics.GenericAPIView):
         mbr = member.contributions.all()
         return [{"amount": i.contrib_amount, "date": str( i.ts_contributed)} for i in mbr]
 
+    @swagger_auto_schema(operationa_description="get all the  members of a group")
     def get(self, request, *args, **kwargs):
         """
         get This endpoint handles the returning of members of a group
-        endpoint : api/groups/:id/members
+
         """
 
         grp = self.get_object()
@@ -399,6 +395,8 @@ class GroupInviteView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated, IsGroupCreator, )
     serializer_class = GroupSerializer
 
+    @swagger_auto_schema(operationa_description="A user who is a group admin can send an invitation " 
+    + "to join his/her group to user. this endpoint allow an admin to do that, the invitation will be sent to the user's mail.")
     def post(self, request, *args, **kwargs):
         """
         post will handle the endpoint that allow a group admin to

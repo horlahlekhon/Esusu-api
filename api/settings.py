@@ -12,9 +12,18 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 import datetime
+import toml
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+CONFIGURATIONS = os.path.join(BASE_DIR, "conf")
+
+with open(os.path.join(CONFIGURATIONS, "config.toml"), 'r') as conf:
+    config = toml.loads(conf.read(), _dict=dict)
+    
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -24,9 +33,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '-t6j))3$)fq%k+!*4=om%l42wxhn!=r2vxr2#)03kkksmq#x-b'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config.get("DEBUG") if config.get("DEBUG") else False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1','lekan.esusu.com']
 
 AUTH_USER_MODEL = 'esusu.User'
 
@@ -42,7 +51,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'esusu',
     'django_extensions',
-    'rest_framework_swagger'
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -83,10 +92,10 @@ WSGI_APPLICATION = 'api.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'esusu_api',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': ''
+        'NAME': config.get("POSTGRES_DB") if config.get("POSTGRES_DB") else "esusu",
+        'USER': config.get("POSTGRES_USER") if config.get("POSTGRES_USER") else "postgres",
+        'PASSWORD': config.get("POSTGRES_PASSWORD") if config.get("POSTGRES_PASSWORD") else "postgres",
+        'HOST': config.get("HOST") if config.get("HOST") else ''
     }
 }
 
@@ -122,7 +131,6 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
         'rest_framework.parsers.JSONParser',
 ],
-'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
 
 private_key = open(os.path.join(BASE_DIR, 'keys/private'), 'r').read()
@@ -159,21 +167,28 @@ JWT_AUTH = {
     'JWT_ALLOW_REFRESH': False,
     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
 
-    'JWT_AUTH_HEADER_PREFIX': 'apikey',
+    'JWT_AUTH_HEADER_PREFIX': 'bearer',
     'JWT_AUTH_COOKIE': None,
 }
 
 SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        "api_key": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-          },
-    },
-    "LOGIN_URL":"login_user",
-    "JSON_EDITOR" :True,
+    'LOGIN_URL': reverse_lazy('login_user'),
+    'PERSIST_AUTH': True,
+    'REFETCH_SCHEMA_WITH_AUTH': True,
+    'REFETCH_SCHEMA_ON_LOGOUT': True,
 
+
+    'SECURITY_DEFINITIONS': {
+        'Basic': {
+            'type': 'basic'
+        },
+        'Bearer': {
+            'in': 'header',
+            'name': 'Authorization',
+            'type': 'apiKey',
+        },
+        
+}
 }
 
 # Internationalization
@@ -193,12 +208,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR,'static')
 STATIC_URL = '/static/'
-# DEBUG = False
 
-MAILJET_API_KEY = 'effd16db611dab2e8a9d7515e6caf7d9' 
-MAILJET_API_SECRET = '462488cdc685193b657ed4dafbf5633e'
+MAILJET_API_KEY = config.get("MAILJET_API_KEY") 
+MAILJET_API_SECRET = config.get("MAILJET_API_SECRET") 
 
-DOMAIN = "https://localhost:5000"
-REGISTERED_MAIL = "horlahlekhon@gmail.com"
-SITE_ADMIN = "Olalekan"
+DOMAIN = config.get("DOMAIN")
+REGISTERED_MAIL = config.get("REGISTERED_MAIL")
+SITE_ADMIN = config.get("SITE_ADMIN")
