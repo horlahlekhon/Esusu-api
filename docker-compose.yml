@@ -5,14 +5,13 @@ services:
     image: postgres:latest
     volumes:
       - db_volume:/var/lib/postgresql/data
-      # - /data/esusu/db_init.sql:/data/esusu/db_init.sql
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: esusu_api
-      POSTGRES_PORT: 5432
+      POSTGRES_PORT: 5435
     ports:
-      - 5435:5432
+      - 5435:5435
     networks:
      - db_network
     container_name: db
@@ -21,8 +20,8 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - /data/esusu/api/media:/app/api/media
-      - /data/esusu/api/static:/app/api/static
+      - media_volume:/app/api/media
+      - static_volume:/app/api/static
       - /data/esusu/conf:/app/api/conf
     working_dir: /app/api/
     ports:
@@ -43,7 +42,7 @@ services:
     container_name: esusu-nginx
     depends_on:
       - esusu-api
-    networks:  
+    networks: 
       - server_network
 
 networks:

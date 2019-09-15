@@ -92,10 +92,11 @@ WSGI_APPLICATION = 'api.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config.get("POSTGRES_DB") if config.get("POSTGRES_DB") else "esusu",
+        'NAME': config.get("POSTGRES_DB") if config.get("POSTGRES_DB") else "esusu_api",
         'USER': config.get("POSTGRES_USER") if config.get("POSTGRES_USER") else "postgres",
         'PASSWORD': config.get("POSTGRES_PASSWORD") if config.get("POSTGRES_PASSWORD") else "postgres",
-        'HOST': config.get("HOST") if config.get("HOST") else ''
+        'HOST': config.get("HOST") if config.get("HOST") else 'db',
+        'PORT': config.get("POSTGRES_PORT") if config.get("POSTGRES_PORT") else '5435',
     }
 }
 
