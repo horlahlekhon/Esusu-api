@@ -21,6 +21,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - media_volume:/app/api/media
+      - /data/esusu/logs/esusu/:/app/api/logs/
       - static_volume:/app/api/static
       - /data/esusu/conf:/app/api/conf
     working_dir: /app/api/
@@ -36,6 +37,7 @@ services:
       - 8000:8000
     volumes:
       - /data/esusu/nginx/conf.d/:/etc/nginx/conf.d/
+      - /data/esusu/logs/nginx/:/var/log/nginx/
       - /data/esusu/uwsgi_params:/data/esusu/uwsgi_params
       - media_volume:/app/api/media
       - static_volume:/app/api/static
