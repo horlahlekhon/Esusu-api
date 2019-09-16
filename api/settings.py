@@ -95,7 +95,8 @@ DATABASES = {
         'NAME': config.get("POSTGRES_DB") if config.get("POSTGRES_DB") else "esusu_api",
         'USER': config.get("POSTGRES_USER") if config.get("POSTGRES_USER") else "postgres",
         'PASSWORD': config.get("POSTGRES_PASSWORD") if config.get("POSTGRES_PASSWORD") else "postgres",
-        # 'HOST': config.get("HOST") if config.get("HOST") else ''
+        'HOST': config.get("HOST") if config.get("HOST") else 'localhost',
+        'PORT': config.get("POSTGRES_PORT") if config.get("POSTGRES_PORT") else '5432',
     }
 }
 
