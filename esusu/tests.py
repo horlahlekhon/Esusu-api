@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient, APITestCase
 from rest_framework.views import status
 
-from .models import Group, Membership
+from .models import Group, Membership, Tenure
 from .serializers import GroupSerializer
 
 # make sure the user in scope is the one we extended
@@ -290,7 +290,7 @@ class MembershipTests(BaseViewTest):
         grp = Group.objects.get(name='ES-lag4')
         usr = User.objects.get(username="test_user3")
         mbrship = Membership.objects.create(user=usr, group=grp, status="A")
-        print("memmemeeeeeeeeeeeeeuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", [i.status for i in grp.members.all()])
+        tenure = tenure = Tenure.objects.create(group=grp)
         self.login_client("test_user3", "testing3")
         response = self.client.post(
             reverse("make_contribution"),
@@ -308,6 +308,7 @@ class MembershipTests(BaseViewTest):
         endpoint : api/group/member/contribute/
         """
         grp = Group.objects.get(name='ES-lag4')
+        tenure = tenure = Tenure.objects.create(group=grp)
         self.login_client("test_user1", "testing1")
         response = self.client.post(
             reverse("make_contribution"),

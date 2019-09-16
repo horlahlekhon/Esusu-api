@@ -20,15 +20,14 @@ all: clean install db test run
 serve:
 	python manage.py collectstatic
 	/etc/init.d/nginx restart
-	uwsgi --socket api.sock --ini uwsgi.ini --chmod-socket=777
+	uwsgi --ini uwsgi.ini
 
 build:
-	# ./manage.py collectstatic
-	docker build -t esusu-api .
+	docker-compose build 
 
 contain:
-	docker run -p 8001:8001 --name esusu -v /data/esusu/api/media/:/app/api/media \
-	-v /tmp:/data/esusu \
-	-v /data/esusu/api/static/:/app/api/static esusu-api
+	docker-compose up
+	docker-compose run /app/api/manage.py migrate
+	docker-compose run /app/api/manage.py collectstatic
 
 build-and-contain: build contain

@@ -323,8 +323,7 @@ class GroupMembershipView(generics.GenericAPIView):
 
     def check_group_is_ready(self):
         grp = self.get_object()
-        mbr_statuses = grp.members.filter(status="I")
-        if len(mbr_statuses) < 1 and len((grp.members.all())) == grp.capacity:
+        if len(grp.members.filter(status="I")) < 1 and len((grp.members.all())) == grp.capacity:
             return True
         return False
 
