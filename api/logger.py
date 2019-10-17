@@ -1,11 +1,12 @@
 import logging, sys
 from logging.handlers import TimedRotatingFileHandler
+from .settings import LOG_DIRECTORY, DEBUG
+import os
 
-DEBUG = False
 logg = logging.getLogger(__name__)
 
 FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
-LOG_FILE = "/data/logs/log.log"
+LOG_FILE = os.path.join(LOG_DIRECTORY, 'esusu.log')
 
 def get_console_handler():
     console_handler = logging.StreamHandler(sys.stdout)
@@ -20,8 +21,10 @@ def get_file_handler():
 def get_logger(logger_name):
    logger = logging.getLogger(logger_name)
    logger.setLevel(logging.DEBUG) # better to have too much log than not enough
-   logger.addHandler(get_console_handler())
-#    logger.addHandler(get_file_handler())
+   if DEBUG == True :
+      logger.addHandler(get_console_handler())
+   else:
+      logger.addHandler(get_file_handler())
    # with this pattern, it's rarely necessary to propagate the error up to parent
    logger.propagate = False
    return logger

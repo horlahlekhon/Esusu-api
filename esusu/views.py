@@ -1,6 +1,6 @@
 import json
 
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import  get_user_model, login
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.shortcuts import render
@@ -23,6 +23,8 @@ from .models import Contribution, Group, Membership, Tenure
 from .serializers import (ContributionSerializer, GroupSerializer,
                           MembershipSerializer, TokenSerializer,
                           UserSerializer)
+from .backends import BasicAuthenticationBackend
+
 from drf_yasg.utils import no_body, swagger_auto_schema
 from drf_yasg import openapi
 from drf_yasg.app_settings import swagger_settings
@@ -61,13 +63,13 @@ class LoginUserView(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         """
-        post: function to process the log in request
+        post:  process the log in request
         """
         username = request.data.get("username", "")
         password = request.data.get("password", "")
         logger.debug("log in credentials", extra={
                      "username": username, "password": password})
-        user = authenticate(
+        user = BasicAuthenticationBackend().authenticate(
             request=request, username=username, password=password)
         if user is not None:
             login(request, user)
@@ -260,9 +262,36 @@ class GroupListView(ListModelMixin, generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
+    @swagger_auto_schema(operation_description="join a group")
+    def post(self, request, *args, **kwargs):
+        grp = self.get_object()
+        user = request.user
+        mbr = Membership.objects.create(group=grp, user=user, status="I")
+        mbr.save()
+        grp.members.add(mbr)
+        
+        mbrship_request = "<h3>Dear {}, a user just requested to join your co-operative group on Esusu confam, kindly log in to accept!".format(
+            grp.admin.username
+            )
+        logger.info("new member details: name: {}, email: {}".format(
+            user.username, user.email))
+        mail_subject = "Esusu Group Membership request"
+        text_heading = "Hello, Dear"
+        mail_resp = send_mail(mail_subject, grp.admin, text_heading, mbrship_request)
+        logger.debug("email response : {}".format(mail_resp.json()))
+        Response(
+            data = {
+                "message" : "A request has been sent to the group admin to confirm your membership. thanks"
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+    
+
+
 class GroupCreateAPIView(CreateModelMixin,
                          generics.GenericAPIView):
-                         
+
     queryset = Group.objects.filter(is_searchable = True)
     serializer_class = GroupSerializer
     permision_classes = (permissions.IsAuthenticated, )
@@ -386,6 +415,29 @@ class GroupMembershipView(generics.GenericAPIView):
             },
             status=status.HTTP_201_CREATED
         )
+    @swagger_auto_schema(operationa_description="confirm and reject the request of a member to join a group")
+    def post(self, request, *args, **kwargs):
+        """
+        Confirm and reject a user's request to join a group
+        
+        """
+        grp = self.get_object()
+        try:
+            member = User.objects.get(id=request.data.get("user"))
+            membership = Membership.objects.get(user=member)
+        except (User.DoesNotExist, Membership.DoesNotExist) :
+            return Response(
+                            data={
+                                "message": "the user you are trying to confirm or reject doesnt exists  on this group"
+                            },
+                            status=status.HTTP_404_NOT_FOUND
+                        )
+        membership.status = "A"
+        membership.save()
+        return Response(
+            status=status.HTTP_200_OK
+        )
+
 
 
 class GroupInviteView(generics.GenericAPIView):

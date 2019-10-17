@@ -1,6 +1,6 @@
 FROM python
 
-LABEL maintainer="Olalekan Adebari"
+LABEL maintainer="Olalekan Adebari Oluwaseun"
 
 WORKDIR /app/api/
 RUN pip3 install uwsgi
@@ -11,8 +11,10 @@ RUN pip3 install -r requirements.txt
 
 COPY . /app/api/
 
+EXPOSE 8001
 
-# EXPOSE 8001
+
+
 
 CMD ["uwsgi", "--ini", "uwsgi.ini"]
 

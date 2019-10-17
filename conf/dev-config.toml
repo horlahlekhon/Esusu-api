@@ -7,5 +7,4 @@ POSTGRES_USER="postgres"
 POSTGRES_PASSWORD="postgres"
 POSTGRES_DB="esusu_api"
 POSTGRES_PORT=5432
-HOST="db"
 DEBUG = true

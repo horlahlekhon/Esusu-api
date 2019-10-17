@@ -9,9 +9,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: esusu_api
-      POSTGRES_PORT: 5435
     ports:
-      - 5435:5435
+      - "5435:5432"
     networks:
      - db_network
     container_name: db
@@ -36,21 +35,21 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - '/data/esusu/nginx/conf.d/:/etc/nginx/conf.d'
-      - '/data/esusu/logs/nginx/: /var/log/nginx'
-      - '/data/esusu/uwsgi_params:/data/esusu/uwsgi_params'
-      - 'media_volume:/app/api/media'
-      - 'static_volume:/app/api/static'
+      - /data/esusu/nginx/conf.d/:/etc/nginx/conf.d
+      - /data/esusu/logs/nginx/:/var/log/nginx
+      - /data/esusu/uwsgi_params:/data/esusu/uwsgi_params
+      - media_volume:/app/api/media
+      - static_volume:/app/api/static
     container_name: esusu-nginx
     depends_on:
       - esusu-api
-    networks: 
+    networks:
       - server_network
 
 networks:
   server_network:
     driver: bridge
-  db_network: 
+  db_network:
     driver: bridge
 
 volumes:

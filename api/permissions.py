@@ -62,5 +62,5 @@ class IsMembershipOwnerOrGroupAdmin(permissions.BasePermission):
         logger.debug("Checking user permission"
         + " to satify if the user in the owner of the membership or the group admin")
         logger.debug( "logged in user : {}".format(request.user.username))
-        logger.debug("group owner: {}".format(obj.user.username) )
+        logger.debug("group owner: {}".format(obj.user.username))
         return obj.user == request.user or obj.group.admin == request.user

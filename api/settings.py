@@ -19,10 +19,15 @@ from django.urls import reverse_lazy
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 CONFIGURATIONS = os.path.join(BASE_DIR, "conf")
+LOG_DIRECTORY = os.path.join(BASE_DIR, 'logs')
 
 with open(os.path.join(CONFIGURATIONS, "config.toml"), 'r') as conf:
     config = toml.loads(conf.read(), _dict=dict)
-    
+
+if config.get('DEBUG') == True:
+    with open(os.path.join(CONFIGURATIONS, "dev-config.toml"), 'r') as conf:
+        config = toml.loads(conf.read(), _dict=dict)
+
 
 
 
@@ -32,12 +37,13 @@ with open(os.path.join(CONFIGURATIONS, "config.toml"), 'r') as conf:
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '-t6j))3$)fq%k+!*4=om%l42wxhn!=r2vxr2#)03kkksmq#x-b'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config.get("DEBUG") if config.get("DEBUG") else False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1','lekan.esusu.com']
 
 AUTH_USER_MODEL = 'esusu.User'
+
+AUTHENTICATION_BACKENDS = ('esusu.backends.BasicAuthenticationBackend',)
 
 # Application definition
 

@@ -273,7 +273,28 @@ class GroupTest(BaseViewTest):
         resp = self.client.get(
             response.data.get("url")
         )
+        print("test_accept_invite_by_a_user : mmmmmmmmmmmmmmmmmmmmmmmmmmmmmm", resp.data)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+    def test_accept_join_by_a_user(self):
+        """
+        test_accept_join_by_a_user : tests that an admin only can accept the invite of a user to join the group
+        """
+        user = User.objects.get(username="test_user3")
+        grp = Group.objects.get(admin__username='test_user')
+        mbrship = Membership.objects.create(user=user, group=grp, status="I")
+        grp.members.add(mbrship)
+        self.login_client("test_user", "testing")
+        resp = self.client.post(
+            reverse("accept_join_request", args=[str(grp.id)]),
+                data = json.dumps({
+                    "user" : user.id
+            }),
+            content_type="application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+
 
 
 class MembershipTests(BaseViewTest):
@@ -318,6 +339,25 @@ class MembershipTests(BaseViewTest):
             content_type="application/json"
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_join_an_existing_group(self):
+        """
+        test_join_an_existing_group : this testst if a user can request to join a group
+        """
+        self.login_client("test_user3", "testing3")
+        user = User.objects.get(username="test_user3")
+        grp = Group.objects.get(name='ES-lag4')
+        response = self.client.post(
+            reverse("join_group", args=[str(grp.id)]),
+            data = json.dumps({
+                "group_id" : grp.id.__str__()
+            }),
+            content_type="application/json"
+        )
+        print("responseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
 
 
 class RegisterUserTest(BaseViewTest):

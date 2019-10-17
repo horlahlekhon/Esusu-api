@@ -3,7 +3,10 @@ clean:
 	find . -type f -name '*.log' -delete
 
 install:
+	cd ../ && python virtualenv python3 .
+	cd api
 	pip3 install -r requirements.txt
+	./manage.py migrate
 
 test:
 	./manage.py test
@@ -15,10 +18,10 @@ db:
 	./manage.py makemigrations
 	./manage.py migrate
 
-all: clean install db test run
+all: clean install test run
 
 serve:
-	python manage.py collectstatic
+	./manage.py collectstatic
 	/etc/init.d/nginx restart
 	uwsgi --ini uwsgi.ini
 
@@ -26,7 +29,15 @@ build:
 	docker-compose build 
 
 contain:
-	docker-compose up
+	sudo mkdir -p /data/esusu/nginx/
+	sudo cp nginx/conf.d /data/esusu/nginx/
+	sudo mkdir -p /data/esusu/conf
+	sudo cp conf/config.toml /data/esusu/conf
+	sudo mkdir -p /data/esusu/logs/nginx/
+	sudo mkdir /data/esusu/logs/esusu
+	sudo cp uwsgi_params /data/esusu/
+
+	docker-compose up &
 	docker-compose run /app/api/manage.py migrate
 	docker-compose run /app/api/manage.py collectstatic
 
